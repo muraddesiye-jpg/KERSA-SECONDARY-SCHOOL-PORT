@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Student Registration | Kersa Secondary School</title><link rel="stylesheet" href="/css/style.css"></head>
+<body data-kersa-experience="aurora-2026" class="auth-page registration-page">
+<div class="register-shell">
+  <div class="register-hero"><a class="brand" href="/"><span class="logo">K</span><span>KERSA<br><small>SECONDARY SCHOOL</small></span></a><div class="hero-copy"><span class="eyebrow">ADMISSIONS • 2026</span><h1>Start your Kersa journey.</h1><p>Complete your application carefully. Your registration will be reviewed by the administrator before your student account becomes active.</p><div class="steps"><span class="active">01 <b>Details</b></span><span>02 <b>Review</b></span><span>03 <b>Approval</b></span></div></div></div>
+  <main class="register-card">
+    <div class="form-head"><div><span class="eyebrow">ONLINE REGISTRATION</span><h2>Student application</h2><p class="muted">Fields marked * are required. Passwords are case-sensitive.</p></div><a class="btn btn-small" href="/login.html">Portal Login</a></div>
+    <form id="regForm" enctype="multipart/form-data" autocomplete="on">
+      <section class="form-section"><h3>👤 Personal information</h3><div class="form-grid">
+        <label>Student name *<input name="studentName" id="studentName" autocomplete="name" required></label>
+        <label>Father's name *<input name="fatherName" id="fatherName" required></label>
+        <label>Grandfather's name *<input name="grandfatherName" id="grandfatherName" required></label>
+        <label>Family FAN number *<input name="familyFanNumber" id="familyFanNumber" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" minlength="16" placeholder="16 digits only" required><small class="field-hint" id="familyFanHint">0 / 16 digits</small></label>
+        <label>Family phone number *<input name="familyPhone" id="familyPhone" inputmode="tel" placeholder="Family contact phone" required></label>
+        <label>Email *<input name="email" id="email" type="email" autocomplete="email" required></label>
+        <label>Gender *<select name="gender" id="gender" required><option value="">Select gender</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+        <label>FAN number *<input name="fanNumber" id="fanNumber" inputmode="numeric" pattern="[0-9]{16}" maxlength="16" minlength="16" placeholder="16 digits only" required><small class="field-hint" id="fanHint">0 / 16 digits</small></label>
+        <label>Disability status *<select name="disabilityStatus" id="disabilityStatus" required><option value="">Select</option><option>None</option><option>Physical</option><option>Visual</option><option>Hearing</option><option>Other</option></select></label>
+        <label>Phone number *<input name="phone" id="phone" autocomplete="tel" required></label>
+        <div class="credential-notice panel"><strong>🔐 Secure student credentials</strong><p>Your <b>unique username and password are created only after the school administrator approves your application</b>. You will receive the credentials in the registration-status result after approval.</p></div>
+      </div></section>
+      <section class="form-section"><h3>📍 Ethiopian address</h3><div class="form-grid">
+        <label>Region *<select name="region" id="region" required><option value="">Select Ethiopian region</option></select></label>
+        <label>Woreda *<select name="woreda" id="woreda" required disabled><option value="">Select region first</option></select></label>
+        <label>Town / City *<input name="townCity" id="townCity" required></label>
+        <label>Previous school *<input name="school" id="school" required></label>
+      </div></section>
+      <section class="form-section"><h3>🎓 Academic placement</h3><div class="form-grid">
+        <label>Grade *<select id="grade" name="grade" required><option value="">Select grade</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
+        <label id="streamWrap" class="hidden">Stream *<select name="stream" id="stream"><option value="">Select stream</option><option>Natural Science</option><option>Social Science</option><option>Other</option></select></label>
+        <label>Past class result (%) *<input name="pastClassResult" id="pastClassResult" type="number" min="50" max="100" step="0.01" placeholder="50–100" required><small class="field-hint">Minimum passing result: 50%</small></label>
+        <label id="reportWrap" class="hidden full-span">Grade 8 report card *<input name="reportCard" type="file" accept=".pdf,.jpg,.jpeg,.png"><small class="field-hint">Required only for Grade 9 • max 10 MB</small></label>
+      </div></section>
+      <label class="check"><input type="checkbox" id="confirm" required> I confirm that the information I entered is accurate.</label>
+      <button class="btn btn-primary full" id="submitBtn">Submit registration <span>→</span></button>
+      <div id="regMsg" class="form-msg" role="alert"></div>
+      <div class="live-preview panel"><div class="section-title"><h3>👁 Live entry preview</h3><span class="muted">Review exactly what you typed before submitting.</span></div><div id="registrationPreview" class="record-grid"></div></div>
+    </form>
+    <div class="status-card"><div><span class="eyebrow">ALREADY APPLIED?</span><h3>Check your registration status</h3><p class="muted">Use the same email and 16-digit FAN number.</p></div><form id="statusForm" class="status-form"><input name="email" type="email" placeholder="Registration email" required><input name="fanNumber" inputmode="numeric" maxlength="16" pattern="[0-9]{16}" placeholder="16-digit FAN" required><button class="btn">Check status</button></form><div id="statusMsg" class="form-msg"></div></div>
+  </main>
+</div>
+<script>
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const form=$('regForm'), region=$('region'), woreda=$('woreda'), grade=$('grade'), streamWrap=$('streamWrap'), reportWrap=$('reportWrap'), fan=$('fanNumber'), familyFan=$('familyFanNumber'), pastResult=$('pastClassResult');
+async function loadRegions(){const r=await fetch('/api/ethiopia/regions');const d=await r.json();if(!r.ok)throw Error(d.error);d.regions.forEach(x=>region.add(new Option(x,x)));}
+region.onchange=async()=>{woreda.innerHTML='<option value="">Loading woredas…</option>';woreda.disabled=true;if(!region.value)return;const r=await fetch('/api/ethiopia/woredas?region='+encodeURIComponent(region.value));const d=await r.json();woreda.innerHTML='<option value="">Select woreda</option>'+(d.woredas||[]).map(x=>`<option>${esc(x)}</option>`).join('');woreda.disabled=false;};
+grade.onchange=()=>{const n=Number(grade.value);streamWrap.classList.toggle('hidden',![11,12].includes(n));reportWrap.classList.toggle('hidden',n!==9);$('stream').required=[11,12].includes(n);};
+const digitField=(el,hint)=>el&&(el.oninput=()=>{el.value=el.value.replace(/\D/g,'').slice(0,16);$(hint).textContent=`${el.value.length} / 16 digits`;}); digitField(fan,'fanHint'); digitField(familyFan,'familyFanHint');
+const fields=[...form.querySelectorAll('input[name],select[name]')];
+const preview=$('registrationPreview');
+const labels={studentName:'Student name',fatherName:"Father's name",grandfatherName:'Grandfather name',familyFanNumber:'Family FAN number',familyPhone:'Family phone',email:'Email',gender:'Gender',fanNumber:'FAN number',disabilityStatus:'Disability status',phone:'Phone',region:'Region',woreda:'Woreda',townCity:'Town / City',school:'Previous school',pastClassResult:'Past class result',grade:'Grade',stream:'Stream'};
+function renderPreview(){const order=['studentName','fatherName','grandfatherName','familyFanNumber','familyPhone','email','gender','fanNumber','disabilityStatus','phone','region','woreda','townCity','school','pastClassResult','grade','stream'];preview.innerHTML=order.map(k=>{const el=form.querySelector(`[name="${k}"]`);if(!el)return '';const v=el.value||'—';const shown=(k==='password'||k==='confirmPassword')?(v==='—'?'—':'•'.repeat(v.length)):v;return `<div><strong>${esc(labels[k])}</strong><br><span>${esc(shown)}</span></div>`}).join('');}
+fields.forEach(el=>{el.addEventListener('input',renderPreview);el.addEventListener('change',renderPreview);});
+renderPreview();
+['studentName','fatherName','grandfatherName'].forEach(n=>{const el=form.querySelector(`[name=\"${n}\"]`);el?.addEventListener('blur',()=>{el.value=el.value.toLocaleLowerCase().replace(/(^|[\s'’-])([\p{L}])/gu,(_,sep,ch)=>sep+ch.toLocaleUpperCase());renderPreview();});});
+form.onsubmit=async e=>{e.preventDefault(); if(Number(pastResult.value)<50){$('regMsg').innerHTML='<div class=\"error-box\">You have not passed. A past class result of 50 or above is required to submit this application.</div>'; pastResult.focus(); return;} $('submitBtn').disabled=true;$('regMsg').textContent='Submitting securely…';try{const r=await fetch('/api/registration',{method:'POST',body:new FormData(form)}),d=await r.json();if(!r.ok)throw Error(d.error||'Registration failed.');$('regMsg').innerHTML=`<div class="success-box"><strong>✓ ${esc(d.message)}</strong><br><b>Username:</b> <code>${esc(d.username)}</code><br><span>${esc(d.note)}</span><hr><button type="button" class="btn btn-small" onclick="location.href='/login.html'">Go to portal login</button></div>`;form.reset();woreda.innerHTML='<option value="">Select region first</option>';woreda.disabled=true;$('fanHint').textContent='0 / 16 digits';$('familyFanHint').textContent='0 / 16 digits';}catch(x){$('regMsg').innerHTML=`<div class="error-box">${esc(x.message)}</div>`;}finally{$('submitBtn').disabled=false;}};
+$('statusForm').onsubmit=async e=>{e.preventDefault();$('statusMsg').textContent='Checking…';const r=await fetch('/api/registration/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.target)))}),d=await r.json();if(!r.ok){$('statusMsg').innerHTML=`<div class="error-box">${esc(d.error)}</div>`;return;}const x=d.registration;const cls=x.status==='approved'?'status-approved':x.status==='rejected'?'status-rejected':'status-pending';$('statusMsg').innerHTML=`<div class="status-result ${cls}"><b>${esc(x.status.toUpperCase())}</b><p>${esc(x.admin_reply||'No administrator reply yet.')}</p>${x.status==='approved'&&x.username?`<div class="credential-result"><strong>🎓 Your unique student login</strong><div><span>Username</span><b>${esc(x.username)}</b></div><div><span>Password</span><b>${esc(x.generated_password||'The generated password has already been used.')}</b></div><small>Save these credentials privately. The generated password is cleared after your first successful login.</small></div>`:''}${x.reviewed_at?`<small>Reviewed: ${esc(new Date(x.reviewed_at).toLocaleString())}</small>`:''}</div>`;};
+loadRegions().catch(e=>$('regMsg').textContent=e.message);
+</script>
+</body></html>
+  
